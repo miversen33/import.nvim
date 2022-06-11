@@ -129,7 +129,7 @@ function M.get_imported_modules()
 end
 
 --- Returns import information about the provided path
---- @param path string
+--- @param module string
 ---     The path to check import details for
 --- @return table
 ---     A table that contains either
@@ -214,9 +214,15 @@ function M.init()
         end
 
         local _status = function(command_details)
-            local path = command_details.args
-            local details = M.get_status(path)
-            local message = path .. ': { imported=' .. tostring(details.imported) .. ', import_duration=' .. tostring(details.import_time / 1000000) .. ' milliseconds }'
+            local module = command_details.args
+            if module:match('^%s*$') then
+                -- Nothing/empty string was passed, display UI
+                vim.api.nvim_command('echon ""') -- Be cool if print worked...
+                require("import.ui").display(M.user_opts)
+                return
+            end
+            local details = M.get_status(module)
+            local message = module .. ': { imported=' .. tostring(details.imported) .. ', import_duration=' .. tostring(details.import_time / 1000000) .. ' milliseconds }'
             print(message)
         end
 
