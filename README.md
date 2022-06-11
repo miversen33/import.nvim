@@ -77,6 +77,7 @@ OR
 ```vim
 :Reload
 ```
+See Also: [import.reload](#importreload)
 
 #### :ImportStatus
 Takes 1 argument and calls [import.get_status](#importgetstatus).  
