@@ -10,6 +10,8 @@ M.import_statuses = {
     info = {},
 }
 
+M.user_opts = {}
+
 --- Use in place of "require"
 --- @param path string
 ---     The path to import, this should be exactly what you would pass to require
@@ -172,6 +174,7 @@ end
 
 function M.init()
     if not vim.g._import_imported then
+        M.config(require("import.opts"))
         -- if our global is not set, we will add Import to global space.
         _G.import = M.import
         vim.g._import_imported = true
@@ -215,6 +218,19 @@ function M.init()
             complete = _complete
         })
     end
+end
+
+function M.config(configuration)
+    configuration = configuration or {}
+    local _opts = vim.deepcopy(require("import.opts"))
+    for key, value in pairs(configuration) do
+        if key == 'output_split_type'
+           and (value ~= 'horizontal' and value ~= 'vertical') then
+            value = 'horizontal'
+        end
+        _opts[key] = value
+    end
+    M.user_opts = configuration
 end
 
 M.init()
