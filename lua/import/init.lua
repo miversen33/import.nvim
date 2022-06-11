@@ -192,6 +192,7 @@ function M.init()
         })
         vim.api.nvim_create_user_command("Reload", _reload, {
             nargs = '*',
+            complete = _complete
         })
     end
 end
