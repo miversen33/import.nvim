@@ -50,6 +50,15 @@ Example: >
 < OR >
     :Reload
 <
+								 *ImportStatus* 
+:ImportStatus
+Takes 1 argument and calls |import.get_status|. Prints the results to the
+print area.
+Prints the following string:
+`path: { imported=true/false, import_duration=time_took_for_import }`
+Example: >
+    :ImportStatus telescope 
+<
 
 See Also: |import.reload|
 
