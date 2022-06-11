@@ -1,6 +1,8 @@
 # import.nvim
 A safe require replacement with niceties
 
+![import nvim](https://user-images.githubusercontent.com/2640668/173205125-eb55ad6b-f16f-44d4-8008-e50789898cdd.gif)
+
 ## Table of Contents
 - [Intro/TLDR](#introduction)
     - [Getting Started](#getting-started)
