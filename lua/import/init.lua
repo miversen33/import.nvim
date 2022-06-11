@@ -178,18 +178,20 @@ function M.init()
                 M.reload(path)
             end
         end
+        local _complete = function()
+            -- TODO: (Mike) Figure out why the sort here isn't being respected?
+            local results = {}
+            for path, _ in pairs(M.import_statuses.info) do
+                table.insert(results, path)
+            end
+            table.sort(results, function(a, b) return a:upper() < b:upper() end)
+            return results
+        end
         vim.api.nvim_create_user_command("Import", _import, {
             nargs = '+',
         })
         vim.api.nvim_create_user_command("Reload", _reload, {
             nargs = '*',
-            complete = function()
-                local results = {}
-                for path, _ in pairs(M.import_statuses.info) do
-                    table.insert(results, path)
-                end
-                return results
-            end
         })
     end
 end
