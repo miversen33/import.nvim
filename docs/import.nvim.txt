@@ -1,0 +1,157 @@
+*import*                                                  A helpful import tool
+
+===============================================================================
+INTRODUCTION
+import.nvim is a lua plugin that allows for safely importing packages (similar 
+to pcall -> https://www.lua.org/pil/8.4.html) that has some added niceties for 
+hot reloading modules from Command Mode or Lua. This enables developers to 
+expirement with new configurations with plugins with the ability to hot load
+the changes without restarting neovim. Or hot reloading a plugin they are 
+working on, etc.
+
+Getting Started:
+1) Include "import" before doing any requires
+    `require("import")
+2) use `import` in place of requires
+    `import('netman')`
+2a) Provide a callback for successful import
+    `import('telescope', function(telescope) telescope.setup{
+        "do module setup"
+    } end)
+3) Profit!
+
+Details:
+Import wraps the inbuilt lua `pcall` function to ensure safety with module 
+importing, while also providing a mechanic to reload modules. Additionally,
+Import captures (and timestamps) any errors or prints that are outputted 
+during a module's import and stores them for later viewing by the developer. 
+Lastly, import stores the amount of time it took for a module to complete its 
+import process, which can be used later for profiling purposes (or whatever 
+your heart desires). This is accomplished via the addition of a global function
+`import` which is done on the initial module import of `import`.
+
+Note: Import checks the vim.g._import_imported variable to ensure that there
+we only run our init once.
+
+                                                                       *Import*
+:Import ~
+Takes `1-n` arguments and calls |import.import| for each argument.
+Example: >
+    :Import telescope netman lualine
+<
+See Also: |import.import|
+
+                                                                       *Reload*
+:Reload ~
+Takes `0-n` arguments and calls |import.reload| for each argument.
+Note, if 0 arguments are provided, performs a reload on _all_ imported modules.
+Example: >
+    :Reload netman lualine
+< OR >
+    :Reload
+<
+
+See Also: |import.reload|
+
+                                                                   *import.api*
+import.api ~
+The api behind import is pretty simplistic but provides 2 features
+- The ability to manage importing/reloading of modules
+- The ability to query import details after import is complete
+
+This is acheived through the following functions
+import.api ~
+The api behind import is pretty simplistic but provides 2 features
+- The ability to manage importing/reloading of modules
+- The ability to query import details after import is complete
+
+This is acheived through the following functions
+
+                                                                *import.import*
+import.import ~
+Neovim (lua) exposed function that can be used to import a module and 
+optionally specify its callback on success. Takes the following params
+- path (string)
+- success_callback (function, Optional)
+If the import is successful, success_callback is called (if provided) and is 
+given the imported module as a parameter to operate on. This way there is very
+little retrofitting a user has to do to adopt `import` into their plugin
+configuration. An example of an existing configuration is below.
+>
+require("myplugin").setup({dostuff="yes"})
+< 
+This can be modified slightly to the following to ensure safe importing (among
+other things described in |INTRODUCTION|)
+>
+import("myplugin", function(myplugin) myplugin.setup({dostuff="yes'}) end)
+<
+See Also: |:Import|
+
+                                                                *import.reload*
+import.reload ~
+Neovim (lua) exposed function that can be used to reload a module and 
+optionally specify its callback on success. Takes the following params
+- path (string)
+- success_callback (function, Optional)
+Note: If success_callback is not provided and one was used on |import.import|,
+we will simply use that one again on reload. To prevent this behavior, either
+provide a new callback to take the place of the cached one, or provide the
+boolean `false` (which will clear out the cached callback and not store a new
+one).
+This is useful for a variety of reasons, from plugin development to 
+configuration experimentation. 
+Example: >
+require("import").reload("myplugin")
+-- Note, as we provided a callback in the above example, that same callback
+-- will be called again on reload
+< OR >
+require("import").reload("myplugin", function(myplugin) myplugin.setup({
+dostuff="no"}) end)
+-- Note, this will override the previously stored success callback and
+-- any subsequent reloads will call this callback instead
+< OR >
+require("import").reload("myplugin", false)
+-- Note, this will _remove_ any success callback associated with this module
+<
+See Also: |:Reload|
+
+                                                            *import.get_status*
+import.get_status ~
+Neovim (lua) exposed function that allows a user to query the status of a
+particular path's import status. 
+Takes the following params
+- path (string)
+
+Returns the following table
+>
+{ status = "unknown" } -- If path was not imported with |import.import|
+< OR >
+{
+    status  = status,  -- String: This will be either success or failed
+    message = message, -- String: This will be either the error that 
+                       --     was provided on import, or nil
+    errors  = errors,  -- Table: Any errors that the path threw during 
+                       --     its import attempt
+    logs    = logs,    -- Table: Anything that was printed during the 
+                       --     import (with approximate timestamps)
+}
+<
+Example: >
+require("import").get_status("myplugin")
+<
+
+                                                     *import.get_success_count*
+import.get_success_count ~
+Neovim (lua) exposed function that returns the number (integer) of successfully
+imported modules
+Example: >
+require("import").get_success_count()
+<
+
+                                                     *import.get_failure_count*
+import.get_failure_count ~
+Neovim (lua) exposed functino that returns the number (integer) of modules that
+failed to import
+Example: >
+require("import").get_failure_count()
+<
