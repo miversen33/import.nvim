@@ -38,19 +38,29 @@ function M.import(path, success_callback)
     -- TODO: (Mike) Consider making the import async?
     local print_logs = {}
     local error_logs = {}
+    local replay_log = {}
     local _print = print
     local _error = error
+    local log_format = '%s - [%s] %s'
     -- print/error shim function to collect statements sent to both
     local print_shim = function(...)
-        local print_log = string.format('[%s] %s', os.date(log_timestamp_format), table.concat(...))
+        local print_log = string.format(log_format, path, os.date(log_timestamp_format), table.concat({...}))
         table.insert(print_logs, print_log)
-        _print(...)
+        if M.user_opts.import_enable_better_printing then
+            table.insert(replay_log, {level='print', log=print_log})
+        else
+            table.insert(replay_log, {level='print', log=...})
+        end
     end
     -- redirect errors to print to avoid breaking import
     local error_shim = function(...)
-        local error_log = string.format('ERROR: [%s] %s', os.date(log_timestamp_format), table.concat(...))
+        local error_log = string.format('ERROR: ' .. log_format, path, os.date(log_timestamp_format), table.concat({...}))
         table.insert(error_logs, error_log)
-        _print('ERROR:', ...)
+        if m.user_opts.import_enable_better_printing then
+            table.insert(replay_log, {level='error', log=error_log})
+        else
+            table.insert(replay_log, {level='error', log=...})
+        end
     end
     -- global shenanigans
     _G.print = print_shim
@@ -61,6 +71,14 @@ function M.import(path, success_callback)
     -- global shenanigans part 2, electric boogaloo
     _G.print = _print
     _G.error = _error
+    -- Since we silenced log output above, lets replay the print events to neovim outside
+    -- pcall. We are doing it this way since apparently prints dont always fire
+    -- in neovim during a require, but they _will_ fire during a pcall.
+    -- Thus to replicate the behavior, we are replaying the events to let neovim
+    -- do whatever wild neovims do
+    for _, log_info in ipairs(replay_log) do
+        print(log_info.log)
+    end
     local message = nil
     if not status then
         -- Import failed 😡
