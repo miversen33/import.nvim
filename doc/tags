@@ -1,0 +1,9 @@
+Import	import.nvim.txt	/*Import*
+Reload	import.nvim.txt	/*Reload*
+import	import.nvim.txt	/*import*
+import.api	import.nvim.txt	/*import.api*
+import.get_failure_count	import.nvim.txt	/*import.get_failure_count*
+import.get_status	import.nvim.txt	/*import.get_status*
+import.get_success_count	import.nvim.txt	/*import.get_success_count*
+import.import	import.nvim.txt	/*import.import*
+import.reload	import.nvim.txt	/*import.reload*
