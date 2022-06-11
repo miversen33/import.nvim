@@ -53,23 +53,25 @@ Example: >
 See Also: |import.reload|
 
 								 *ImportStatus* 
+:ImportStatus ~
+Takes 0 or 1 argument and calls |import.get_status|.  
+If no argument is provided, reaches out and starts the Import Manager UI.
+Otherwise prints the results to the print area.
+Prints the following string:  
+`module: { imported=true/false, import_duration=time_took_for_import }`
+
+Usage:
+```vim
+:ImportStatus telescope 
+```
+OR
+```vim
 :ImportStatus
-Takes 1 argument and calls |import.get_status|. Prints the results to the
-print area.
-Prints the following string:
-`path: { imported=true/false, import_duration=time_took_for_import }`
-Example: >
-    :ImportStatus telescope 
+```
 <
 See Also: |import.get_status|
 
                                                                    *import.api*
-import.api ~
-The api behind import is pretty simplistic but provides 2 features
-- The ability to manage importing/reloading of modules
-- The ability to query import details after import is complete
-
-This is acheived through the following functions
 import.api ~
 The api behind import is pretty simplistic but provides 2 features
 - The ability to manage importing/reloading of modules
@@ -161,10 +163,28 @@ require("import").get_success_count()
 
                                                      *import.get_failure_count*
 import.get_failure_count ~
-Neovim (lua) exposed functino that returns the number (integer) of modules that
+Neovim (lua) exposed function that returns the number (integer) of modules that
 failed to import
 Example: >
 require("import").get_failure_count()
 <
 
+								*import.config*
+import.config ~
+Neovim (lua) exposed that allows for UI configuration.
+Expects a table that can contain any of the following keys
+>
+{
+    keypress_select               = "<Enter>",
+    keypress_close                = "<Esc>",
+    keypress_scroll_output_down   = "<C-Down>",
+    keypress_scroll_output_up     = "<C-Up>",
+    output_split_type             = "horizontal",
+    import_failed_icon		  = "⛔",
+    import_success_icon		  = "✅",
+    import_enable_better_printing = false
+}
+<
+Note: the above are the default values used.
+Note: `output_split_type` is required to be either "horizontal" or "vertical".
  vim:tw=78:ts=8:noet:ft=help:norl:

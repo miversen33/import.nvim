@@ -3,6 +3,7 @@ ImportStatus	import.nvim.txt	/*ImportStatus*
 Reload	import.nvim.txt	/*Reload*
 import	import.nvim.txt	/*import*
 import.api	import.nvim.txt	/*import.api*
+import.config	import.nvim.txt	/*import.config*
 import.get_failure_count	import.nvim.txt	/*import.get_failure_count*
 import.get_status	import.nvim.txt	/*import.get_status*
 import.get_success_count	import.nvim.txt	/*import.get_success_count*
