@@ -5,6 +5,8 @@ A safe require replacement with niceties
 - [Intro/TLDR](#introduction)
     - [Getting Started](#getting-started)
     - [Details](#details)
+- [UI](#ui)
+    - [Configuration](#ui-configuration) 
 - [Vim Commands](#vim-commands)
     - [:Import](#import)
     - [:Reload](#reload)
@@ -15,6 +17,7 @@ A safe require replacement with niceties
     - [import.get_status](#importgetstatus)
     - [import.get_success_count](#importgetsuccesscount)
     - [import.get_failure_count](#importgetfailurecount)
+    - [import.config](#importconfig)
 
 ### Introduction
 import.nvim is a lua plugin that allows for safely importing packages [similar 
@@ -54,6 +57,33 @@ your heart desires). This is accomplished via the addition of a global function
 Note: Import checks the `vim.g._import_imported` variable to ensure that there
 we only run our init once.
 
+### UI
+If you use the [`:ImportStatus`](#importstatus) command with no arguments, a floating window is presented with 
+the various packages that import imported for you. Additionally, there is a second pane that will display information
+about the import include
+- Import Duration
+- If the package was imported successfully
+- What it printed during its import
+- Any errors it threw
+
+#### UI Configuration
+Currently the UI can be configured by calling the [`import.config`](#importconfig) function after loading import.
+All options found in [the options file](https://github.com/miversen33/import.nvim/blob/main/lua/import/opts.lua) can be overriden
+though there are some sanity checks to ensure that the options are valid.
+The available options (and their defaults) are
+
+- keypress_select             = "<Enter>",
+- keypress_close              = '<Esc>',
+- keypress_scroll_output_down = '<C-Down>',
+- keypress_scroll_output_up   = '<C-Up>',
+- output_split_type           = 'horizontal', -- Can also be vertical, if I dont know what you passed I will assume horizontal
+- import_failed_icon          = "⛔",
+- import_success_icon         = "✅",
+- import_enable_better_printing = false
+
+Note: `output_split_type` **MUST** be either `'horizontal'` or `'vertical'`. Failure to provide a valid option will result in the default
+being used.
+    
 ### Vim Commands
 
 #### :Import
@@ -80,14 +110,19 @@ OR
 See Also: [import.reload](#importreload)
 
 #### :ImportStatus
-Takes 1 argument and calls [import.get_status](#importgetstatus).  
-Prints the results to the
-print area. Prints the following string:  
+Takes 0 or 1 argument and calls [import.get_status](#importgetstatus).  
+If no argument is provided, reaches out and starts the Import Manager UI.
+Otherwise prints the results to the print area.
+Prints the following string:  
 `module: { imported=true/false, import_duration=time_took_for_import }`
 
 Usage:
 ```vim
 :ImportStatus telescope 
+```
+OR
+```vim
+:ImportStatus
 ```
 See Also: [import.get_status](#import)
 
@@ -180,6 +215,17 @@ require("import").get_status("myplugin")
 ```
 See Also: [:ImportStatus](#importstatus)
 
+#### import.config
+Neovim (lua) exposed function that expects a table that contains key, value pairs where the key matches 
+what is found in import.opts.
+Usage:
+```lua
+require("import").config({
+    -- Your customizations here
+})
+```
+See Also: [UI Configuration](#ui-configuration)
+    
 #### import.get_success_count
 Neovim (lua) exposed function that returns the number (integer) of successfully
 imported modules
