@@ -108,11 +108,14 @@ end
 ---         logs    = logs,    -- Table: Anything that was printed during the import (with approximate timestamps)
 ---     }
 function M.get_status(path)
-    local details = {status="unknown"}
+    local details = {status="unknown", imported=false, import_time=-1}
     if not M.import_statuses.info[path] then return details end
 
     if M.import_statuses.failures[path] then details.status = "failed"
-    else details.status = "success" end
+    else
+        details.status = "success"
+        details.imported = true
+    end
 
     details.message = M.import_statuses.info[path].import_message
     details.import_time = M.import_statuses.info[path].import_time
