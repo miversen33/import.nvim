@@ -50,6 +50,8 @@ Example: >
 < OR >
     :Reload
 <
+See Also: |import.reload|
+
 								 *ImportStatus* 
 :ImportStatus
 Takes 1 argument and calls |import.get_status|. Prints the results to the
@@ -59,8 +61,7 @@ Prints the following string:
 Example: >
     :ImportStatus telescope 
 <
-
-See Also: |import.reload|
+See Also: |import.get_status|
 
                                                                    *import.api*
 import.api ~
@@ -148,6 +149,7 @@ Returns the following table
 Example: >
 require("import").get_status("myplugin")
 <
+See Also: |:ImportStatus|
 
                                                      *import.get_success_count*
 import.get_success_count ~
