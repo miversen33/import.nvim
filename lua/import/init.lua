@@ -58,9 +58,9 @@ function M.import(path, success_callback)
         table.insert(M.import_statuses.failures, path)
     else
         table.insert(M.import_statuses.successes, path)
+    end
 	if success_callback then
-        	success_callback(imported_module)
-    	end
+        success_callback(imported_module)
     end
 end
 
