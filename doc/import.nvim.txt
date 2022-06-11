@@ -11,13 +11,13 @@ working on, etc.
 
 Getting Started:
 1) Include "import" before doing any requires
-    `require("import")
+    `require("import")`
 2) use `import` in place of requires
     `import('netman')`
 2a) Provide a callback for successful import
-    `import('telescope', function(telescope) telescope.setup{
-        "do module setup"
-    } end)
+    `import('telescope', function(telescope) telescope.setup{`
+        `"do module setup"`
+    `} end)`
 3) Profit!
 
 Details:
