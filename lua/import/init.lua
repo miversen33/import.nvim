@@ -155,34 +155,44 @@ function M.reload(path, success_callback)
     M.import(path, success_callback)
 end
 
-if not vim.g._import_wrapper_imported then
-    -- if our global is not set, we will add Import to global space.
-    _G.import = M.import
-    vim.g._import_wrapper_imported = true
-    local _import = function(command_details)
-        for _, path in ipairs(command_details.fargs) do
-            M.import(path)
-        end
-    end
-
-    local _reload = function(command_details)
-        for _, path in ipairs(command_details.fargs) do
-            M.reload(path)
-        end
-    end
-    vim.api.nvim_create_user_command("Import", _import, {
-    	nargs = '+',
-    })
-    vim.api.nvim_create_user_command("Reload", _reload, {
-    	nargs = '*',
-        complete = function()
-            local results = {}
-            for path, _ in pairs(M.import_statuses.info) do
-                table.insert(results, path)
+function M.init()
+    if not vim.g._import_imported then
+        -- if our global is not set, we will add Import to global space.
+        _G.import = M.import
+        vim.g._import_imported = true
+        local _import = function(command_details)
+            local paths = command_details.fargs
+            if not paths then
+                paths = {}
+                for path, _ in pairs(M.import_statuses.info) do
+                    table.insert(paths, path)
+                end
             end
-            return results
+            for _, path in ipairs(paths) do
+                M.import(path)
+            end
         end
-    })
+
+        local _reload = function(command_details)
+            for _, path in ipairs(command_details.fargs) do
+                M.reload(path)
+            end
+        end
+        vim.api.nvim_create_user_command("Import", _import, {
+            nargs = '+',
+        })
+        vim.api.nvim_create_user_command("Reload", _reload, {
+            nargs = '*',
+            complete = function()
+                local results = {}
+                for path, _ in pairs(M.import_statuses.info) do
+                    table.insert(results, path)
+                end
+                return results
+            end
+        })
+    end
 end
 
+M.init()
 return M
