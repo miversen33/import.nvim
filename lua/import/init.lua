@@ -35,33 +35,53 @@ function M.import(path, success_callback)
     local error_logs = {}
     local _print = print
     local _error = error
+    -- print/error shim function to collect statements sent to both
     local print_shim = function(...)
         local print_log = string.format('[%s] %s', os.date(log_timestamp_format), table.concat(...))
         table.insert(print_logs, print_log)
         _print(...)
     end
+    -- redirect errors to print to avoid breaking import
     local error_shim = function(...)
         local error_log = string.format('ERROR: [%s] %s', os.date(log_timestamp_format), table.concat(...))
         table.insert(error_logs, error_log)
         _print('ERROR:', ...)
     end
+    -- global shenanigans
     _G.print = print_shim
     _G.error = error_shim
     local start_time = vim.loop.hrtime()
-    local status, imported_module = pcall(require, path)
+    local status, module_return = pcall(require, path)
     local duration = vim.loop.hrtime() - start_time
+    -- global shenanigans part 2, electric boogaloo
     _G.print = _print
     _G.error = _error
-    local message = status or nil
-    M.import_statuses.info[path] = {import_message=message, import_time=duration, print_logs=print_logs, error_logs=error_logs, success_callback=success_callback}
-    if not status or status == false then
+    local message = nil
+    if not status then
+        -- Import failed 😡
+        message = module_return
         table.insert(M.import_statuses.failures, path)
     else
+        -- Import was a success 😀
         table.insert(M.import_statuses.successes, path)
+        if success_callback then
+            local callback_status, _ = pcall(success_callback, module_return)
+            if not callback_status then
+                -- Callback failed 😡
+                error_shim(_)
+                local success_index = 1
+                for _, _path in ipairs(M.import_statuses.successes) do
+                    if _path == path then
+                        break
+                    end
+                    success_index = success_index + 1
+                end
+                table.remove(M.import_statuses.successes, success_index)
+                table.insert(M.import_statuses.failures, path)
+            end
+        end
     end
-	if success_callback then
-        success_callback(imported_module)
-    end
+    M.import_statuses.info[path] = {import_message=message, import_time=duration, print_logs=print_logs, error_logs=error_logs, success_callback=success_callback}
 end
 
 --- Returns the number of failed imports
