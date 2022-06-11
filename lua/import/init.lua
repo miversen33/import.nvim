@@ -29,7 +29,10 @@ M.import_statuses = {
 function M.import(path, success_callback)
     -- TODO: (Mike) I am unsure if this is the best way to do handle an existing import or not?
     -- I dont think I want to fail as importing on an import is completely valid.
-    if _G.package[path] then success_callback(_G.package[path]) end
+    if package.loaded[path] then
+        if success_callback then success_callback(package.loaded[path]) end
+        return
+    end
     -- TODO: (Mike) Consider making the import async?
     local print_logs = {}
     local error_logs = {}
@@ -133,7 +136,6 @@ end
 ---     previous callback.
 ---     **To prevent this, pass "false" to success_callback, or provide a new callback**
 function M.reload(path, success_callback)
-    _G.package[path] = nil
     local success_index = 1
     local failed_index = 1
     local found_failure = false
@@ -158,6 +160,7 @@ function M.reload(path, success_callback)
     if found_success then
         table.remove(M.import_statuses.successes, success_index)
     end
+    package.loaded[path] = nil
     local callback_message = ''
     if M.import_statuses.info[path] then
         local _success_callback = M.import_statuses.info[path].success_callback
