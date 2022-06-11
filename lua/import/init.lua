@@ -201,6 +201,14 @@ function M.init()
                 M.reload(path)
             end
         end
+
+        local _status = function(command_details)
+            local path = command_details.args
+            local details = M.get_status(path)
+            local message = path .. ': { imported=' .. tostring(details.imported) .. ', import_duration=' .. tostring(details.import_time / 1000000) .. ' milliseconds }'
+            print(message)
+        end
+
         local _complete = function()
             -- TODO: (Mike) Figure out why the sort here isn't being respected?
             local results = {}
@@ -215,6 +223,10 @@ function M.init()
         })
         vim.api.nvim_create_user_command("Reload", _reload, {
             nargs = '*',
+            complete = _complete
+        })
+        vim.api.nvim_create_user_command("ImportStatus", _status, {
+            nargs = 1,
             complete = _complete
         })
     end
