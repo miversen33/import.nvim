@@ -63,24 +63,17 @@ function M.import(path, success_callback)
     if not status then
         -- Import failed 😡
         message = module_return
-        table.insert(M.import_statuses.failures, path)
+        M.import_statuses.failures[path] = 1
     else
         -- Import was a success 😀
-        table.insert(M.import_statuses.successes, path)
+        M.import_statuses.successes[path] = 1
         if success_callback then
             local callback_status, _ = pcall(success_callback, module_return)
             if not callback_status then
                 -- Callback failed 😡
                 error_shim(_)
-                local success_index = 1
-                for _, _path in ipairs(M.import_statuses.successes) do
-                    if _path == path then
-                        break
-                    end
-                    success_index = success_index + 1
-                end
-                table.remove(M.import_statuses.successes, success_index)
-                table.insert(M.import_statuses.failures, path)
+                M.import_statuses.successes[path] = nil
+                M.import_statuses.failures[path] = 1
             end
         end
     end
@@ -89,12 +82,30 @@ end
 
 --- Returns the number of failed imports
 function M.get_failure_count()
-    return #M.import_statuses.failures
+    local count = 0
+    for _, _ in pairs(M.import_statuses.failures) do
+        count = count + 1
+    end
+    return count
 end
 
 --- Returns the number of successful imports
 function M.get_success_count()
-    return #M.import_statuses.successes
+    local count = 0
+    for _, _ in pairs(M.import_statuses.successes) do
+        count = count + 1
+    end
+    return count
+end
+
+--- Returns table (array) of modules (strings) that were imported (successfully or otherwise)
+function M.get_imported_modules()
+    local results = {}
+    for path, _ in pairs(M.import_statuses.info) do
+        table.insert(results, path)
+    end
+    table.sort(results, function(a, b) return a:upper() < b:upper() end)
+    return results
 end
 
 --- Returns import information about the provided path
@@ -110,20 +121,20 @@ end
 ---         errors  = errors,  -- Table: Any errors that the path threw during its import attempt
 ---         logs    = logs,    -- Table: Anything that was printed during the import (with approximate timestamps)
 ---     }
-function M.get_status(path)
+function M.get_status(module)
     local details = {status="unknown", imported=false, import_time=-1}
-    if not M.import_statuses.info[path] then return details end
-
-    if M.import_statuses.failures[path] then details.status = "failed"
+    if not M.import_statuses.info[module] then return details end
+    if M.import_statuses.failures[module] then
+        details.status = "failed"
     else
         details.status = "success"
         details.imported = true
     end
 
-    details.message = M.import_statuses.info[path].import_message
-    details.import_time = M.import_statuses.info[path].import_time
-    details.errors = M.import_statuses.info[path].error_logs
-    details.logs = M.import_statuses.info[path].print_logs
+    details.message = M.import_statuses.info[module].import_message
+    details.import_time = M.import_statuses.info[module].import_time
+    details.errors = M.import_statuses.info[module].error_logs
+    details.logs = M.import_statuses.info[module].print_logs
 
     return details
 end
@@ -136,31 +147,9 @@ end
 ---     previous callback.
 ---     **To prevent this, pass "false" to success_callback, or provide a new callback**
 function M.reload(path, success_callback)
-    local success_index = 1
-    local failed_index = 1
-    local found_failure = false
-    local found_success = false
-    for _, _path in ipairs(M.import_statuses.failures) do
-        if path == _path then
-            found_failure = true
-            break
-        end
-        failed_index = failed_index + 1
-    end
-    for _, _path in ipairs(M.import_statuses.successes) do
-        if path == _path then
-            found_success = true
-            break
-        end
-        success_index = success_index + 1
-    end
-    if found_failure then
-        table.remove(M.import_statuses.failures, failed_index)
-    end
-    if found_success then
-        table.remove(M.import_statuses.successes, success_index)
-    end
     package.loaded[path] = nil
+    M.import_statuses.failures[path] = nil
+    M.import_statuses.successes[path] = nil
     local callback_message = ''
     if M.import_statuses.info[path] then
         local _success_callback = M.import_statuses.info[path].success_callback
@@ -187,21 +176,19 @@ function M.init()
         _G.import = M.import
         vim.g._import_imported = true
         local _import = function(command_details)
-            local paths = command_details.fargs
-            if not paths then
-                paths = {}
-                for path, _ in pairs(M.import_statuses.info) do
-                    table.insert(paths, path)
-                end
-            end
-            for _, path in ipairs(paths) do
-                M.import(path)
+            local modules = command_details.fargs
+            for _, module in ipairs(modules) do
+                M.import(module)
             end
         end
 
         local _reload = function(command_details)
-            for _, path in ipairs(command_details.fargs) do
-                M.reload(path)
+            local modules = command_details.fargs
+            if not modules then
+                modules = M.get_imported_modules()
+            end
+            for _, module in ipairs(modules) do
+                M.reload(module)
             end
         end
 
@@ -214,12 +201,7 @@ function M.init()
 
         local _complete = function()
             -- TODO: (Mike) Figure out why the sort here isn't being respected?
-            local results = {}
-            for path, _ in pairs(M.import_statuses.info) do
-                table.insert(results, path)
-            end
-            table.sort(results, function(a, b) return a:upper() < b:upper() end)
-            return results
+            return M.get_imported_modules()
         end
         vim.api.nvim_create_user_command("Import", _import, {
             nargs = '+',
