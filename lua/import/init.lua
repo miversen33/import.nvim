@@ -238,7 +238,7 @@ function M.init()
             complete = _complete
         })
         vim.api.nvim_create_user_command("ImportStatus", _status, {
-            nargs = 1,
+            nargs = '?',
             complete = _complete
         })
     end
