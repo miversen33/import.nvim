@@ -171,11 +171,12 @@ function M._load_info()
     local details = require("import").get_status(module)
 
     local lines = {}
+    local errors = {details.message, table.concat(details.errors, ' ')}
     table.insert(lines, module)
     table.insert(lines, "    Imported: " .. details.status)
     table.insert(lines, "    Import Time: " .. details.import_time / 10000 .. " milliseconds")
     table.insert(lines, "")
-    table.insert(lines, "    Errors: " .. table.concat(details.errors, ' '))
+    table.insert(lines, "    Errors: " .. table.concat(errors, ' '))
     table.insert(lines, "    Logs: ")
     for _, log in ipairs(details.logs) do
         table.insert(lines, log)
