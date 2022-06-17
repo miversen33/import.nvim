@@ -56,7 +56,7 @@ function M.import(path, success_callback)
     local error_shim = function(...)
         local error_log = string.format('ERROR: ' .. log_format, path, os.date(log_timestamp_format), table.concat({...}))
         table.insert(error_logs, error_log)
-        if m.user_opts.import_enable_better_printing then
+        if M.user_opts.import_enable_better_printing then
             table.insert(replay_log, {level='error', log=error_log})
         else
             table.insert(replay_log, {level='error', log=...})
