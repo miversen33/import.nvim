@@ -106,6 +106,7 @@ function M.display(opts)
     vim.api.nvim_buf_set_option(M.view_buf_handle, 'modifiable', false)
     vim.api.nvim_buf_set_option(M.view_buf_handle, 'filetype', "ImportManager")
     vim.api.nvim_buf_set_option(M.view_buf_handle, 'modified', false)
+    vim.api.nvim_set_option_value('wrap', true, {scope='local'})
     vim.api.nvim_buf_set_keymap(M.buf_handle, 'n', M._user_opts.keypress_select, ':lua require("import.ui")._selected_module(vim.fn.line("."))<CR>', {noremap=true, silent=true})
     vim.api.nvim_buf_set_keymap(M.buf_handle, 'n', M._user_opts.keypress_close,  ':lua require("import.ui").close()<CR>', {noremap=true, silent=true})
     vim.api.nvim_buf_set_keymap(M.buf_handle, 'n', M._user_opts.keypress_scroll_output_down, ':lua require("import.ui")._scroll_view_pane_down()<CR>', {noremap=true, silent=true})
@@ -190,13 +191,30 @@ function M._load_info()
 
     local lines = {}
     local errors = {}
-    table.insert(errors, details.message)
-    table.insert(errors, table.concat(details.errors, ' '))
+    -- table.insert(errors, table.concat(details.errors, ' '))
     table.insert(lines, module)
     table.insert(lines, "    Imported: " .. details.status)
     table.insert(lines, "    Import Time: " .. details.import_time / 10000 .. " milliseconds")
     table.insert(lines, "")
-    table.insert(lines, "    Errors: " .. table.concat(errors, ' '))
+    table.insert(lines, "    Errors: ")
+    if details.message then
+        for _, _error in ipairs(details.message) do
+            _error = _error:gsub('\r\n', '')
+            if not _error:match('^%s*$') then
+                table.insert(lines, '        ' .. _error)
+            end
+        end
+        table.insert(lines, '')
+    end
+    if details.errors then
+        for _, _error in ipairs(details.errors) do
+            _error = _error:gsub('\r\n', '')
+            if not _error:match('^%s*$') then
+                table.insert(lines, '        ' .. _error)
+            end
+        end
+        table.insert(lines, '')
+    end
     table.insert(lines, "    Logs: ")
     for _, log in ipairs(details.logs) do
         table.insert(lines, log)
