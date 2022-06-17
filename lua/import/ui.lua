@@ -47,7 +47,7 @@ function M.display(opts)
         view_row = (cur_ui.height / 2) - (view_height / 2) + (float_height / 2)
     else
         view_height = float_height
-        view_width = math.floor(float_width * .3)
+        view_width = math.floor(float_width * .6)
         float_width = float_width - view_width
         float_col = (cur_ui.width / 2) - (float_width / 2) - (view_width / 2)
         float_row = (cur_ui.height / 2) - (float_height / 2)
