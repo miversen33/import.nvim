@@ -156,6 +156,20 @@ function M._selected_module(line)
     M._update_main_buffer_line(line, M._format_module(module))
 end
 
+function M._scroll_view_pane_down()
+    vim.api.nvim_win_call(M.view_win_handle,
+    function()
+        vim.cmd([[normal!]] .. 1 .. [[]])
+    end)
+end
+
+function M._scroll_view_pane_up()
+    vim.api.nvim_win_call(M.view_win_handle,
+    function()
+        vim.cmd([[normal!]] .. 1 .. [[]])
+    end)
+end
+
 function M._get_module(line)
     line = M.lines[line]
     if not line or line == -1 then
