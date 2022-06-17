@@ -74,14 +74,14 @@ All options found in [the options file](https://github.com/miversen33/import.nvi
 though there are some sanity checks to ensure that the options are valid.
 The available options (and their defaults) are
 
-- keypress_select             = "<Enter>",
-- keypress_close              = '<Esc>',
-- keypress_scroll_output_down = '<C-Down>',
-- keypress_scroll_output_up   = '<C-Up>',
-- output_split_type           = 'horizontal', -- Can also be vertical, if I dont know what you passed I will assume horizontal
-- import_failed_icon          = "⛔",
-- import_success_icon         = "✅",
-- import_enable_better_printing = false
+- keypress_select             = `'<Enter>'`,
+- keypress_close              = `'<Esc>'`,
+- keypress_scroll_output_down = `'<C-Down>'`,
+- keypress_scroll_output_up   = `'<C-Up>'`,
+- output_split_type           = `'horizontal'`, -- Can also be vertical, if I dont know what you passed I will assume horizontal
+- import_failed_icon          = `"⛔"`,
+- import_success_icon         = `"✅"`,
+- import_enable_better_printing = `false`
 
 Note: `output_split_type` **MUST** be either `'horizontal'` or `'vertical'`. Failure to provide a valid option will result in the default
 being used.
