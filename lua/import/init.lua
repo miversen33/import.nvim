@@ -150,8 +150,13 @@ function M.get_status(module)
         details.status = "success"
         details.imported = true
     end
-
-    details.message = M.import_statuses.info[module].import_message
+    local message = {}
+    if M.import_statuses.info[module].import_message then
+        for line, _ in M.import_statuses.info[module].import_message:gmatch('([^\r\n]*)') do
+            table.insert(message,line)
+        end
+    end
+    details.message = message
     details.import_time = M.import_statuses.info[module].import_time
     details.errors = M.import_statuses.info[module].error_logs
     details.logs = M.import_statuses.info[module].print_logs
