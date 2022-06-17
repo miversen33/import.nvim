@@ -56,7 +56,7 @@ function M.import(path, success_callback)
     local error_shim = function(...)
         local error_log = string.format('ERROR: ' .. log_format, path, os.date(log_timestamp_format), table.concat({...}))
         table.insert(error_logs, error_log)
-        if m.user_opts.import_enable_better_printing then
+        if M.user_opts.import_enable_better_printing then
             table.insert(replay_log, {level='error', log=error_log})
         else
             table.insert(replay_log, {level='error', log=...})
@@ -150,8 +150,13 @@ function M.get_status(module)
         details.status = "success"
         details.imported = true
     end
-
-    details.message = M.import_statuses.info[module].import_message
+    local message = {}
+    if M.import_statuses.info[module].import_message then
+        for line, _ in M.import_statuses.info[module].import_message:gmatch('([^\r\n]*)') do
+            table.insert(message,line)
+        end
+    end
+    details.message = message
     details.import_time = M.import_statuses.info[module].import_time
     details.errors = M.import_statuses.info[module].error_logs
     details.logs = M.import_statuses.info[module].print_logs
@@ -254,7 +259,7 @@ function M.config(configuration)
         end
         _opts[key] = value
     end
-    M.user_opts = configuration
+    M.user_opts = _opts
 end
 
 M.init()
