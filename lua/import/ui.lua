@@ -190,8 +190,6 @@ function M._load_info()
     local details = require("import").get_status(module)
 
     local lines = {}
-    local errors = {}
-    -- table.insert(errors, table.concat(details.errors, ' '))
     table.insert(lines, module)
     table.insert(lines, "    Imported: " .. details.status)
     table.insert(lines, "    Import Time: " .. details.import_time / 10000 .. " milliseconds")
@@ -217,7 +215,7 @@ function M._load_info()
     end
     table.insert(lines, "    Logs: ")
     for _, log in ipairs(details.logs) do
-        table.insert(lines, log)
+        table.insert(lines, '        ' .. log)
     end
     vim.api.nvim_buf_set_option(M.view_buf_handle, 'modifiable', true)
     vim.api.nvim_buf_set_lines(M.view_buf_handle, 0, -1, false, {})
