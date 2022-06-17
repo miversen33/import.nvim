@@ -4,6 +4,8 @@ M.lines = {}
 M.is_displayed = false
 M.buf_handle = nil
 M.view_buf_handle = nil
+M.buf_win_handle = nil
+M.view_win_handle = nil
 M._user_opts = nil
 
 function M._init(_opts)
@@ -104,8 +106,11 @@ function M.display(opts)
     vim.api.nvim_buf_set_option(M.view_buf_handle, 'modifiable', false)
     vim.api.nvim_buf_set_option(M.view_buf_handle, 'filetype', "ImportManager")
     vim.api.nvim_buf_set_option(M.view_buf_handle, 'modified', false)
+    vim.api.nvim_set_option_value('wrap', true, {scope='local'})
     vim.api.nvim_buf_set_keymap(M.buf_handle, 'n', M._user_opts.keypress_select, ':lua require("import.ui")._selected_module(vim.fn.line("."))<CR>', {noremap=true, silent=true})
     vim.api.nvim_buf_set_keymap(M.buf_handle, 'n', M._user_opts.keypress_close,  ':lua require("import.ui").close()<CR>', {noremap=true, silent=true})
+    vim.api.nvim_buf_set_keymap(M.buf_handle, 'n', M._user_opts.keypress_scroll_output_down, ':lua require("import.ui")._scroll_view_pane_down()<CR>', {noremap=true, silent=true})
+    vim.api.nvim_buf_set_keymap(M.buf_handle, 'n', M._user_opts.keypress_scroll_output_up, ':lua require("import.ui")._scroll_view_pane_up()<CR>', {noremap=true, silent=true})
     vim.api.nvim_create_autocmd('BufDelete', {
         buffer = M.buf_handle,
         desc = "Clear out Cache for import UI",
@@ -123,8 +128,8 @@ function M.display(opts)
         desc = "Loading Details into View Buffer",
         callback = M._load_info,
     })
-    vim.api.nvim_open_win(M.view_buf_handle, 1, view_opts)
-    vim.api.nvim_open_win(M.buf_handle, 1, float_opts)
+    M.view_win_handle = vim.api.nvim_open_win(M.view_buf_handle, 1, view_opts)
+    M.buf_win_handle  = vim.api.nvim_open_win(M.buf_handle, 1, float_opts)
 end
 
 function M._format_module(module, details)
@@ -152,6 +157,20 @@ function M._selected_module(line)
     M._update_main_buffer_line(line, M._format_module(module))
 end
 
+function M._scroll_view_pane_down()
+    vim.api.nvim_win_call(M.view_win_handle,
+    function()
+        vim.cmd([[normal!]] .. 1 .. [[]])
+    end)
+end
+
+function M._scroll_view_pane_up()
+    vim.api.nvim_win_call(M.view_win_handle,
+    function()
+        vim.cmd([[normal!]] .. 1 .. [[]])
+    end)
+end
+
 function M._get_module(line)
     line = M.lines[line]
     if not line or line == -1 then
@@ -172,13 +191,30 @@ function M._load_info()
 
     local lines = {}
     local errors = {}
-    table.insert(errors, details.message)
-    table.insert(errors, table.concat(details.errors, ' '))
+    -- table.insert(errors, table.concat(details.errors, ' '))
     table.insert(lines, module)
     table.insert(lines, "    Imported: " .. details.status)
     table.insert(lines, "    Import Time: " .. details.import_time / 10000 .. " milliseconds")
     table.insert(lines, "")
-    table.insert(lines, "    Errors: " .. table.concat(errors, ' '))
+    table.insert(lines, "    Errors: ")
+    if details.message then
+        for _, _error in ipairs(details.message) do
+            _error = _error:gsub('\r\n', '')
+            if not _error:match('^%s*$') then
+                table.insert(lines, '        ' .. _error)
+            end
+        end
+        table.insert(lines, '')
+    end
+    if details.errors then
+        for _, _error in ipairs(details.errors) do
+            _error = _error:gsub('\r\n', '')
+            if not _error:match('^%s*$') then
+                table.insert(lines, '        ' .. _error)
+            end
+        end
+        table.insert(lines, '')
+    end
     table.insert(lines, "    Logs: ")
     for _, log in ipairs(details.logs) do
         table.insert(lines, log)
@@ -199,8 +235,16 @@ function M.close()
     if M.view_buf_handle and vim.api.nvim_buf_is_loaded(M.view_buf_handle) then
         vim.api.nvim_buf_delete(M.view_buf_handle, {force=true})
     end
+    if M.buf_win_handle and vim.api.nvim_win_is_valid(M.buf_win_handle) then
+        vim.api.nvim_win_close(M.buf_win_handle, {force=true})
+    end
+    if M.view_win_ and vim.api.nvim_win_is_valid(M.view_win_handle) then
+        vim.api.nvim_win_close(M.view_win_handle, {force=true})
+    end
     M.buf_handle = nil
     M.view_buf_handle = nil
+    M.buf_win_handle = nil
+    M.view_win_handle = nil
 end
 
 return M
