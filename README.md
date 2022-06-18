@@ -140,10 +140,18 @@ Neovim (lua) exposed function that can be used to import a module and
 optionally specify its callback on success. Takes the following params
 - path (string)
 - success_callback (function, Optional)
+- import_opts (table, Optional)
+    - Default Values
+      - hide_output = false,
+      - hide_errors = false
 If the import is successful, success_callback is called (if provided) and is 
 given the imported module as a parameter to operate on. This way there is very
 little retrofitting a user has to do to adopt `import` into their plugin
-configuration.
+configuration. `import_opts` can be provided if you wish to log but hide the 
+output from a particular import event. If the import is successful, 
+success_callback is called (if provided) and is given the imported module 
+as a parameter to operate on. This way there is very little retrofitting a 
+user has to do to adopt `import` into their plugin configuration.
 
 Usage:
 ```lua

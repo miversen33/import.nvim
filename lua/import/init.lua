@@ -3,6 +3,10 @@
 
 local log_timestamp_format = '%Y-%m-%d %H:%M:%S'
 local M = {}
+local import_defaults = {
+    hide_output = false,
+    hide_errors = false
+}
 
 M.import_statuses = {
     failures = {},
@@ -11,6 +15,8 @@ M.import_statuses = {
 }
 
 M.user_opts = {}
+M._is_in_error_state = false
+M._printed_error_state = false
 
 --- Use in place of "require"
 --- @param path string
@@ -21,6 +27,15 @@ M.user_opts = {}
 ---     its single parameter.
 ---     Note: This is saved for calling later on reload
 ---     EG: success_callback(imported_module)
+--- @param import_opts table
+---     Optional: If provided, the following options are available to be used during
+---     import.
+---     hide_output = false,
+---         -- When provided, this will hide anything that was printed, but still have it available
+---         -- on the ImportStatus page
+---     hide_errors = false,
+---         -- When provided, this will hide anything that was printed to the errors, but still
+---         -- be available on the ImportStatus page
 --- @return nil
 ---
 --- Examples
@@ -28,12 +43,16 @@ M.user_opts = {}
 --- import("lualine", function(lualine) lualine.setup{ "do your module setup here" } end)
 --- import("cmp", function(cmp) cmp.setup{ "do your module setup here" } end)
 --- import("netman") -- This module doesn't require setup so you dont need to specify it
-function M.import(path, success_callback)
+function M.import(path, success_callback, import_opts)
     -- TODO: (Mike) I am unsure if this is the best way to do handle an existing import or not?
     -- I dont think I want to fail as importing on an import is completely valid.
     if package.loaded[path] then
         if success_callback then success_callback(package.loaded[path]) end
         return
+    end
+    import_opts = import_opts or {}
+    for key, value in pairs(import_defaults) do
+        if import_opts[key] == nil then import_opts[key] = value end
     end
     -- TODO: (Mike) Consider making the import async?
     local print_logs = {}
@@ -71,19 +90,22 @@ function M.import(path, success_callback)
     -- global shenanigans part 2, electric boogaloo
     _G.print = _print
     _G.error = _error
+    if not import_opts.hide_output then
     -- Since we silenced log output above, lets replay the print events to neovim outside
     -- pcall. We are doing it this way since apparently prints dont always fire
     -- in neovim during a require, but they _will_ fire during a pcall.
     -- Thus to replicate the behavior, we are replaying the events to let neovim
     -- do whatever wild neovims do
-    for _, log_info in ipairs(replay_log) do
-        print(log_info.log)
+        for _, log_info in ipairs(replay_log) do
+            print(log_info.log)
+        end
     end
     local message = nil
     if not status then
         -- Import failed 😡
         message = module_return
         M.import_statuses.failures[path] = 1
+        M._is_in_error_state = true
     else
         -- Import was a success 😀
         M.import_statuses.successes[path] = 1
@@ -98,6 +120,10 @@ function M.import(path, success_callback)
         end
     end
     M.import_statuses.info[path] = {import_message=message, import_time=duration, print_logs=print_logs, error_logs=error_logs, success_callback=success_callback}
+    if M._is_in_error_state and not M._printed_error_state then
+        M._printed_error_state = true
+        print("There was an error with your imports")
+    end
 end
 
 --- Returns the number of failed imports
