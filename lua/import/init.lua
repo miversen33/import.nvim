@@ -63,7 +63,12 @@ function M.import(path, success_callback, import_opts)
     local log_format = '%s - [%s] %s'
     -- print/error shim function to collect statements sent to both
     local print_shim = function(...)
-        local print_log = string.format(log_format, path, os.date(log_timestamp_format), table.concat({...}))
+        local print_safe_args = {}
+        local _ = {...}
+        for i=1, #_ do
+            table.insert(print_safe_args, tostring(_[i]))
+        end
+        local print_log = string.format(log_format, path, os.date(log_timestamp_format), table.concat(print_safe_args))
         table.insert(print_logs, print_log)
         if M.user_opts.import_enable_better_printing then
             table.insert(replay_log, {level='print', log=print_log})
@@ -73,7 +78,12 @@ function M.import(path, success_callback, import_opts)
     end
     -- redirect errors to print to avoid breaking import
     local error_shim = function(...)
-        local error_log = string.format('ERROR: ' .. log_format, path, os.date(log_timestamp_format), table.concat({...}))
+        local print_safe_args = {}
+        local _ = {...}
+        for i=1, #_ do
+            table.insert(print_safe_args, tostring(_[i]))
+        end
+        local error_log = string.format('ERROR: ' .. log_format, path, os.date(log_timestamp_format), table.concat(print_safe_args))
         table.insert(error_logs, error_log)
         if M.user_opts.import_enable_better_printing then
             table.insert(replay_log, {level='error', log=error_log})
