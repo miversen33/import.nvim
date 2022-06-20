@@ -98,7 +98,7 @@ Usage:
 See Also: [import.import](#importimport)
 
 #### :Reload
-Takes `0-n` arguments and calls import.reload| for each argument.
+Takes `0-n` arguments and calls [import.reload](#importreload) for each argument.
 Note, if 0 arguments are provided, performs a reload on _all_ imported modules.
 
 Usage:
@@ -144,6 +144,7 @@ optionally specify its callback on success. Takes the following params
     - Default Values
       - hide_output = false,
       - hide_errors = false
+
 If the import is successful, success_callback is called (if provided) and is 
 given the imported module as a parameter to operate on. This way there is very
 little retrofitting a user has to do to adopt `import` into their plugin
