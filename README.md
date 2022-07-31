@@ -46,6 +46,21 @@ working on, etc.
     ```
 3) Profit!
 
+Note: If you are feeling very fancy, `import.nvim` has inbuilt support for 
+[`lualine`](https://github.com/nvim-lualine/lualine.nvim). Simply add the `import`
+component to your lualine configuration
+```lua
+    require("lualine").setup({
+        sections = {
+            lualine_x = { "import" }
+        }
+    })
+```
+Also note: `import` implements lualine's `on_click` functionality, so if you double
+click on the failed import icon (by default, that is ⛔), it will open the ImportManager.
+
+See Also: [ImportStatus](#importstatus)
+
 #### Details
 Import wraps the inbuilt lua [`pcall`](https://www.lua.org/pil/8.4.html) function to ensure safety with module 
 importing, while also providing a mechanic to reload modules. Additionally,
