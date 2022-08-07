@@ -195,27 +195,35 @@ function M._load_info()
     table.insert(lines, "    Import Time: " .. details.import_time / 10000 .. " milliseconds")
     table.insert(lines, "")
     table.insert(lines, "    Errors: ")
+    local whitespace = '        '
     if details.message then
-        for _, _error in ipairs(details.message) do
-            _error = _error:gsub('\r\n', '')
-            if not _error:match('^%s*$') then
-                table.insert(lines, '        ' .. _error)
+        for _, _message in ipairs(details.message) do
+            for _line in _message:gmatch('[^\n]+') do
+                if not _line:match('^%s*$') then
+                    table.insert(lines, string.format('%s%s', whitespace, _line))
+                end
             end
         end
         table.insert(lines, '')
     end
     if details.errors then
         for _, _error in ipairs(details.errors) do
-            _error = _error:gsub('\r\n', '')
-            if not _error:match('^%s*$') then
-                table.insert(lines, '        ' .. _error)
+            for _line in _error:gmatch('[^\n]+') do
+                require("netman").log.debug({line=_line})
+                if not _line:match('^%s*$') then
+                    table.insert(lines, string.format('%s%s', whitespace, _line))
+                end
             end
         end
         table.insert(lines, '')
     end
     table.insert(lines, "    Logs: ")
-    for _, log in ipairs(details.logs) do
-        table.insert(lines, '        ' .. log)
+    if details.logs then
+        for _, _log in ipairs(details.logs) do
+            for _line in _log:gmatch('[^\n]+') do
+                table.insert(lines, string.format('%s%s', whitespace, _line))
+            end
+        end
     end
     vim.api.nvim_buf_set_option(M.view_buf_handle, 'modifiable', true)
     vim.api.nvim_buf_set_lines(M.view_buf_handle, 0, -1, false, {})
