@@ -40,8 +40,8 @@ working on, etc.
     ```
     Note: you can provide a callback which will be called on successful import
     ```lua
-    import('netman', function(netman)
-        netman.setup({ "do module setup" })
+    import('lualine', function(lualine)
+        lualine.setup({ "do module setup" })
     end)
     ```
 3) Profit!
