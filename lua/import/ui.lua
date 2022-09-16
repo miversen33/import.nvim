@@ -209,7 +209,6 @@ function M._load_info()
     if details.errors then
         for _, _error in ipairs(details.errors) do
             for _line in _error:gmatch('[^\n]+') do
-                require("netman").log.debug({line=_line})
                 if not _line:match('^%s*$') then
                     table.insert(lines, string.format('%s%s', whitespace, _line))
                 end
