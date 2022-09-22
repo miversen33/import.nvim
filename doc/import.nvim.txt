@@ -15,9 +15,14 @@ Getting Started:
 2) use `import` in place of requires
     `import('netman')`
 2a) Provide a callback for successful import
-    `import('telescope', function(telescope) telescope.setup{`
-        `"do module setup"`
-    `} end)`
+    `import('lualine', function(lualine)`
+        `lualine.setup({ "do module setup" })`
+    `end)`
+2b) Provide a table of modules to import at once
+    `import({"cmp", "cmp_nvim_lsp"}, function(modules)`
+        `modules.cmp.setup()`
+        `modules.cmp_nvim_lsp.setup()`
+    `end)`
 3) Profit!
 
 Details:
@@ -58,8 +63,8 @@ Takes 0 or 1 argument and calls |import.get_status|.
 If no argument is provided, reaches out and starts the Import Manager UI.
 Otherwise prints the results to the print area.
 Prints the following string:
-`module: { imported=true/false, import_duration=time_took_for_import,
-imported_with=modules_imported_with_module}`
+`module: { imported=true/false, import_duration=time_took_for_import,`
+`imported_with=modules_imported_with_module }`
 
 Usage:
 ```vim
