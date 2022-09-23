@@ -192,7 +192,7 @@ function M._load_info()
     local lines = {}
     table.insert(lines, module)
     table.insert(lines, "    Imported: " .. details.status)
-    table.insert(lines, "    Import Time: " .. details.import_time / 100000 .. " milliseconds")
+    table.insert(lines, "    Import Time: " .. details.import_time / 1000000 .. " milliseconds")
     table.insert(lines, "")
     table.insert(lines, "    Imported With:")
     local whitespace = '        '
