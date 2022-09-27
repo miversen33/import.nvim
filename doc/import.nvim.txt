@@ -15,9 +15,14 @@ Getting Started:
 2) use `import` in place of requires
     `import('netman')`
 2a) Provide a callback for successful import
-    `import('telescope', function(telescope) telescope.setup{`
-        `"do module setup"`
-    `} end)`
+    `import('lualine', function(lualine)`
+        `lualine.setup({ "do module setup" })`
+    `end)`
+2b) Provide a table of modules to import at once
+    `import({"cmp", "cmp_nvim_lsp"}, function(modules)`
+        `modules.cmp.setup()`
+        `modules.cmp_nvim_lsp.setup()`
+    `end)`
 3) Profit!
 
 Details:
@@ -54,11 +59,12 @@ See Also: |import.reload|
 
 								 *ImportStatus* 
 :ImportStatus ~
-Takes 0 or 1 argument and calls |import.get_status|.  
+Takes 0 or 1 argument and calls |import.get_status|.
 If no argument is provided, reaches out and starts the Import Manager UI.
 Otherwise prints the results to the print area.
-Prints the following string:  
-`module: { imported=true/false, import_duration=time_took_for_import }`
+Prints the following string:
+`module: { imported=true/false, import_duration=time_took_for_import,`
+`imported_with=modules_imported_with_module }`
 
 Usage:
 ```vim
@@ -81,28 +87,47 @@ This is acheived through the following functions
 
                                                                 *import.import*
 import.import ~
-Neovim (lua) exposed function that can be used to import a module and 
+Neovim (lua) exposed function that can be used to import a module and
 optionally specify its callback on success. Takes the following params
-- path (string)
+- imports (table|string)
 - success_callback (function, Optional)
 - import_opts (table, Optional)
     - Default Values
       - hide_output = false,
       - hide_errors = false
-If the import is successful, success_callback is called (if provided) and is 
-given the imported module as a parameter to operate on. This way there is very
+If the import is successful, success_callback is called (if provided) and is
+given the imported module(s) as a parameter to operate on. This way there is very
 little retrofitting a user has to do to adopt `import` into their plugin
-configuration. 
+configuration.
 `import_opts` can be provided if you wish to log but hide the output from
 a particular import event. An example of an existing configuration is below.
 >
 require("myplugin").setup({dostuff="yes"})
-< 
+<
 This can be modified slightly to the following to ensure safe importing (among
 other things described in |INTRODUCTION|)
 >
 import("myplugin", function(myplugin) myplugin.setup({dostuff="yes'}) end)
 <
+
+Note: You can also provide a table of modules to import. If you perform an
+import this way, the callback function will be provided a table who's keys are
+the modules that were provided to import, and the values will be the modules
+that were imported. In practice, this might look like
+
+>
+import({"myplugin1", "myplugin2"}, function(modules)
+    modules.myplugin1.setup()
+    modules.myplugin2.setup()
+end)
+<
+
+This kind of setup is guaranteed to be safe as a failure in any of the import
+modules will prevent the callback from being called. This means that if there
+is a failure in `myplugin1`, then the callback is never called. Because of
+this, you can always assume that any modules that were meant to be imported
+will be available in your callback.
+
 See Also: |:Import|
 
                                                                 *import.reload*
@@ -136,7 +161,7 @@ See Also: |:Reload|
                                                             *import.get_status*
 import.get_status ~
 Neovim (lua) exposed function that allows a user to query the status of a
-particular path's import status. 
+particular path's import status.
 Takes the following params
 - path (string)
 
@@ -145,13 +170,15 @@ Returns the following table
 { status = "unknown" } -- If path was not imported with |import.import|
 < OR >
 {
-    status  = status,  -- String: This will be either success or failed
-    message = message, -- String: This will be either the error that 
-                       --     was provided on import, or nil
-    errors  = errors,  -- Table: Any errors that the path threw during 
-                       --     its import attempt
-    logs    = logs,    -- Table: Anything that was printed during the 
-                       --     import (with approximate timestamps)
+    status     = status,    -- String: This will be either success or failed
+    message    = message,   -- String: This will be either the error that
+                            --     was provided on import, or nil
+    errors     = errors,    -- Table: Any errors that the path threw during
+                            --     its import attempt
+    logs       = logs,      -- Table: Anything that was printed during the
+                            --     import (with approximate timestamps)
+    co_modules = co_modules -- Table: Any modules that were imported with
+                            --     this module
 }
 <
 Example: >

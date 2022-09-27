@@ -44,6 +44,13 @@ working on, etc.
         lualine.setup({ "do module setup" })
     end)
     ```
+    Note: You can provide a table of modules to import at once
+     ```lua
+    import({"cmp", "cmp_nvim_lsp"}, function(modules)
+        modules.cmp.setup()
+        modules.cmp_nvim_lsp.setup()
+    end)
+    ```
 3) Profit!
 
 Note: If you are feeling very fancy, `import.nvim` has inbuilt support for 
@@ -131,7 +138,7 @@ Takes 0 or 1 argument and calls [import.get_status](#importgetstatus).
 If no argument is provided, reaches out and starts the Import Manager UI.
 Otherwise prints the results to the print area.
 Prints the following string:  
-`module: { imported=true/false, import_duration=time_took_for_import }`
+`module: { imported=true/false, import_duration=time_took_for_import, imported_with=modules_imported_with_modules }`
 
 Usage:
 ```vim
@@ -178,6 +185,24 @@ other things described in [Introduction](#introduction))
 ```lua
 import("myplugin", function(myplugin) myplugin.setup({dostuff="yes'}) end)
 ```
+
+Note: You can also provide a table of modules to import. If you perform an
+import this way, the callback function will be provided a table who's keys are
+the modules that were provided to import, and the values will be the modules
+that were imported. In practice, this might look like
+
+```lua
+import({"myplugin1", "myplugin2"}, function(modules)
+    modules.myplugin1.setup()
+    modules.myplugin2.setup()
+end)
+```
+
+This kind of setup is guaranteed to be safe as a failure in any of the import
+modules will prevent the callback from being called. This means that if there
+is a failure in `myplugin1`, then the callback is never called. Because of
+this, you can always assume that any modules that were meant to be imported
+will be available in your callback.
 See Also: [:Import](#import)
 
 #### import.reload
@@ -225,13 +250,15 @@ Returns the following table
 OR
 ```lua
 {
-    status  = status,  -- String: This will be either success or failed
-    message = message, -- String: This will be either the error that 
-                       --     was provided on import, or nil
-    errors  = errors,  -- Table: Any errors that the path threw during 
-                       --     its import attempt
-    logs    = logs,    -- Table: Anything that was printed during the 
-                       --     import (with approximate timestamps)
+    status     = status,    -- String: This will be either success or failed
+    message    = message,   -- String: This will be either the error that
+                            --     was provided on import, or nil
+    errors     = errors,    -- Table: Any errors that the path threw during
+                            --     its import attempt
+    logs       = logs,      -- Table: Anything that was printed during the
+                            --     import (with approximate timestamps)
+    co_modules = co_modules -- Table: Any modules that were imported with
+                            --     this module
 }
 ```
 

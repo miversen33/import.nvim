@@ -194,8 +194,13 @@ function M._load_info()
     table.insert(lines, "    Imported: " .. details.status)
     table.insert(lines, "    Import Time: " .. details.import_time / 1000000 .. " milliseconds")
     table.insert(lines, "")
-    table.insert(lines, "    Errors: ")
+    table.insert(lines, "    Imported With:")
     local whitespace = '        '
+    for _, module in ipairs(details.co_modules) do
+        table.insert(lines, string.format("%s- %s", whitespace, module))
+    end
+    table.insert(lines, "")
+    table.insert(lines, "    Errors: ")
     if details.message then
         for _, _message in ipairs(details.message) do
             for _line in _message:gmatch('[^\n]+') do
