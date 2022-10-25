@@ -296,3 +296,9 @@ Usage:
 ```lua
 require("import").get_failure_count()
 ```
+
+
+## Donate
+**THIS IS A FREE PRODUCT!**   
+Do not feel obligated to donate anything for this. Your issues will be resolved all the same whether you have donated or not. Still, if you are feeling generous...  
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=T2QJK7GZYC772&no_recurring=0&item_name=Help+me+stay+caffeinated+so+I+can+write+semi+usable+code&currency_code=USD)
