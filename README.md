@@ -1,4 +1,10 @@
 # import.nvim
+
+# -----> Deprecation Notice <-----
+[See Issue #21 for details](https://github.com/miversen33/import.nvim/issues/21)
+
+---------------
+
 A safe require replacement with niceties
 
 ![import nvim](https://user-images.githubusercontent.com/2640668/173205125-eb55ad6b-f16f-44d4-8008-e50789898cdd.gif)
